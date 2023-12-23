@@ -2,7 +2,7 @@ from functions import cell_to_coordinates, coordinates_to_cell
 from constants import *
 
 
-class Figure:
+class CheckersFigure:
     """
         Args:
             color (bool): input format: True(white), False(black)
@@ -27,8 +27,11 @@ class Figure:
             return self.char_black
         return self.char_white
 
+    def __repr__(self):
+        return self.__str__()
 
-class Checker(Figure):
+
+class Checker(CheckersFigure):
     def __init__(self, color):
         super().__init__(color)
         self.char_white = "⛀"
@@ -39,21 +42,18 @@ class Checker(Figure):
             if abs(x2 - x1) == 1 and y2 - y1 == 1:
                 return True
         else:
-            if abs(x2 - x1) == 1 and y1 - y2 == 1:
+            if abs(x2 - x1) == 1 and y2 - y1 == -1:
                 return True
         return False
 
-    def check_attack(self, x1, y1, x2, y2):
-        if self.get_color() == WHITE:
-            if abs(x2 - x1) == 2 and y2 - y1 == 2:
-                return True
-        else:
-            if abs(x2 - x1) == 2 and y1 - y2 == 2:
-                return True
+    @staticmethod
+    def check_attack(x1, y1, x2, y2):
+        if abs(x2 - x1) == abs(y2 - y1) == 2:
+            return True
         return False
 
 
-class King(Figure):
+class CheckersKing(CheckersFigure):
     def __init__(self, color):
         super().__init__(color)
         self.char_white = "⛁"
@@ -61,18 +61,18 @@ class King(Figure):
 
     @staticmethod
     def check_move(x1, y1, x2, y2):
-        if abs(x1 - x2) == abs(y1 - y2):
+        if abs(x2 - x1) == abs(y2 - y1) and x1 != x2 and y1 != y2:
             return True
         return False
 
     @staticmethod
     def check_attack(x1, y1, x2, y2):
-        if abs(x1 - x2) == abs(y1 - y2) and abs(x1 - x2) > 1:
+        if abs(x2 - x1) == abs(y2 - y1) > 1:
             return True
         return False
 
 
-class Desk:
+class CheckersDesk:
     def __init__(self):
         self.desk = [[None for _ in range(8)] for _ in range(8)]
         self.__move_color = WHITE
@@ -118,15 +118,27 @@ class Desk:
         return self.desk[y - 1][x - 1]
 
     def move(self, x1, y1, x2, y2):
-        if isinstance(self.get_cell(x1, y1), Checker) and self.get_cell(x1, y1).get_color() and y1 == 7:
-            self.desk[y2 - 1][x2 - 1] = King(WHITE)
+        if isinstance(self.get_cell(x1, y1), Checker) and self.get_cell(x1, y1).get_color() == WHITE and y2 == 8:
+            self.desk[y2 - 1][x2 - 1] = CheckersKing(WHITE)
             self.desk[y1 - 1][x1 - 1] = None
-        elif isinstance(self.get_cell(x1, y1), Checker) and not self.get_cell(x1, y1).get_color() and y1 == 2:
-            self.desk[y2 - 1][x2 - 1] = King(BLACK)
+        elif isinstance(self.get_cell(x1, y1), Checker) and self.get_cell(x1, y1).get_color() == BLACK and y2 == 1:
+            self.desk[y2 - 1][x2 - 1] = CheckersKing(BLACK)
             self.desk[y1 - 1][x1 - 1] = None
         else:
             self.desk[y2 - 1][x2 - 1] = self.desk[y1 - 1][x1 - 1]
             self.desk[y1 - 1][x1 - 1] = None
+
+    def attack(self, x1, y1, x2, y2):
+        if isinstance(self.get_cell(x1, y1), Checker) and self.get_cell(x1, y1).get_color() == WHITE and y2 == 8:
+            self.desk[y2 - 1][x2 - 1] = CheckersKing(WHITE)
+            self.desk[y1 - 1][x1 - 1] = None
+        elif isinstance(self.get_cell(x1, y1), Checker) and self.get_cell(x1, y1).get_color() == BLACK and y2 == 1:
+            self.desk[y2 - 1][x2 - 1] = CheckersKing(BLACK)
+            self.desk[y1 - 1][x1 - 1] = None
+        else:
+            self.desk[y2 - 1][x2 - 1] = self.desk[y1 - 1][x1 - 1]
+            self.desk[y1 - 1][x1 - 1] = None
+        self.clear_line(x1, y1, x2, y2)
 
     def clear_line(self, x1, y1, x2, y2):
         if x1 < x2 and y1 < y2:
@@ -151,28 +163,32 @@ class Desk:
                     break
 
     def check_move(self, x1, y1, x2, y2):
-        if abs(y2 - y1) == abs(x2 - x1):
+        if self.get_cell(x1, y1).check_move(x1, y1, x2, y2):
             if x1 < x2 and y1 < y2:
                 for i in range(1, x2 - x1 + 1):
                     if self.get_cell(x1 + i, y1 + i) is not None:
                         return False
+                return True
             elif x1 < x2 and y2 < y1:
                 for i in range(1, x2 - x1 + 1):
                     if self.get_cell(x1 + i, y1 - i) is not None:
                         return False
+                return True
             elif x2 < x1 and y2 < y1:
                 for i in range(1, abs(x2 - x1) + 1):
                     if self.get_cell(x1 - i, y1 - i) is not None:
                         return False
+                return True
             elif x2 < x1 and y1 < y2:
                 for i in range(1, abs(x2 - x1) + 1):
                     if self.get_cell(x1 - i, y1 + i) is not None:
                         return False
-        return True
+                return True
+        return False
 
     def check_attack(self, x1, y1, x2, y2):
-        figure_count_line = 0
-        if abs(y2 - y1) == abs(x2 - x1):
+        if self.get_cell(x1, y1).check_attack(x1, y1, x2, y2):
+            figure_count_line = 0
             if x1 < x2 and y1 < y2:
                 for i in range(1, x2 - x1):
                     if self.get_cell(x1 + i, y1 + i) is not None:
@@ -227,7 +243,7 @@ class Desk:
                         return True
         return False
 
-    def check_black_checker_can_move(self, x, y, color):
+    def check_can_move_down(self, x, y, color):
         if y != 1:
             if x == 1:
                 if self.get_cell(x + 1, y - 1) is None:
@@ -264,7 +280,7 @@ class Desk:
                         return True
         return False
 
-    def check_white_checker_can_move(self, x, y, color):
+    def check_can_move_up(self, x, y, color):
         if y != 8:
             if x == 1:
                 if self.get_cell(x + 1, y + 1) is None:
@@ -304,11 +320,11 @@ class Desk:
     def check_can_move(self, x, y):
         if isinstance(self.get_cell(x, y), Checker):
             if self.get_cell(x, y).get_color() == WHITE:
-                return self.check_white_checker_can_move(x, y, WHITE)
+                return self.check_can_move_up(x, y, WHITE)
             elif self.get_cell(x, y).get_color() == BLACK:
-                return self.check_black_checker_can_move(x, y, BLACK)
-        return (self.check_white_checker_can_move(x, y, self.get_cell(x, y).get_color()) or
-                self.check_black_checker_can_move(x, y, self.get_cell(x, y).get_color()))
+                return self.check_can_move_down(x, y, BLACK)
+        return (self.check_can_move_up(x, y, self.get_cell(x, y).get_color()) or
+                self.check_can_move_down(x, y, self.get_cell(x, y).get_color()))
 
     def draw(self, color):
         for y in range(1, 9):

@@ -1,13 +1,13 @@
-from checkers_base import Figure, Checker, King, Desk
+from checkers_base import CheckersFigure, Checker, CheckersKing, CheckersDesk
 from functions import cell_to_coordinates, coordinates_to_cell
 from constants import *
 
 
-checkers_desk = Desk()
+checkers_desk = CheckersDesk()
 white_figures_dict = {"checker": Checker(WHITE),
-                      "king": King(WHITE)}
+                      "king": CheckersKing(WHITE)}
 black_figures_dict = {"checker": Checker(BLACK),
-                      "king": King(BLACK)}
+                      "king": CheckersKing(BLACK)}
 
 
 def chessboard_arrangement():
@@ -56,7 +56,7 @@ def first_move_color():
 def main():
     first_move_color()
     chessboard_arrangement()
-    game = checkers_desk.check_continue()
+    game = True
     while game:
         print(checkers_desk)
         if checkers_desk.get_color() == WHITE:
@@ -71,11 +71,11 @@ def main():
             print("The figure on this square was not found")
         elif figure.get_color() != checkers_desk.get_color():
             print("You choose a figure with the wrong color")
-        elif figure.check_move(x1, y1, x2, y2) and checkers_desk.check_move(x1, y1, x2, y2):
+        elif checkers_desk.check_move(x1, y1, x2, y2):
             checkers_desk.move(x1, y1, x2, y2)
             checkers_desk.change_color()
-        elif figure.check_attack(x1, y1, x2, y2) and checkers_desk.check_attack(x1, y1, x2, y2):
-            checkers_desk.move(x1, y1, x2, y2)
+        elif checkers_desk.check_attack(x1, y1, x2, y2):
+            checkers_desk.attack(x1, y1, x2, y2)
             checkers_desk.clear_line(x1, y1, x2, y2)
             checkers_desk.change_color()
         else:
