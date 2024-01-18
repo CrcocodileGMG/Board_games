@@ -317,6 +317,90 @@ class CheckersDesk:
                         return True
         return False
 
+    def check_can_attack_right_up(self, x, y):
+        if x <= 6 and y <= 6:
+            if isinstance(self.get_cell(x, y), Checker):
+                if self.get_cell(x + 1, y + 1) is not None:
+                    if (self.get_cell(x + 1, y + 1).get_color() != self.get_cell(x, y).get_color() and
+                            self.get_cell(x + 2, y + 2) is None):
+                        return True
+            else:
+                enemy_figure_counter = 0
+                for i in range(1, min(8 - x, 8 - y) + 1):
+                    if self.get_cell(x + i, y + i) is not None:
+                        if self.get_cell(x + i, y + i).get_color() != self.get_cell(x, y).get_color():
+                            enemy_figure_counter += 1
+                        else:
+                            return False
+                    elif enemy_figure_counter == 1:
+                        return True
+                    elif enemy_figure_counter > 1:
+                        return False
+        return False
+
+    def check_can_attack_left_up(self, x, y):
+        if x >= 3 and y <= 6:
+            if isinstance(self.get_cell(x, y), Checker):
+                if self.get_cell(x - 1, y + 1) is not None:
+                    if (self.get_cell(x - 1, y + 1).get_color() != self.get_cell(x, y).get_color() and
+                            self.get_cell(x - 2, y + 2) is None):
+                        return True
+            else:
+                enemy_figure_counter = 0
+                for i in range(1, min(x - 1, 8 - y) + 1):
+                    if self.get_cell(x - i, y + i) is not None:
+                        if self.get_cell(x - i, y + i).get_color() != self.get_cell(x, y).get_color():
+                            enemy_figure_counter += 1
+                        else:
+                            return False
+                    elif enemy_figure_counter == 1:
+                        return True
+                    elif enemy_figure_counter > 1:
+                        return False
+        return False
+
+    def check_can_attack_right_down(self, x, y):
+        if x <= 6 and y >= 3:
+            if isinstance(self.get_cell(x, y), Checker):
+                if self.get_cell(x + 1, y - 1) is not None:
+                    if (self.get_cell(x + 1, y - 1).get_color() != self.get_cell(x, y).get_color() and
+                            self.get_cell(x + 2, y - 2) is None):
+                        return True
+            else:
+                enemy_figure_counter = 0
+                for i in range(1, min(8 - x, y - 1) + 1):
+                    if self.get_cell(x + i, y - i) is not None:
+                        if self.get_cell(x + i, y - i).get_color() != self.get_cell(x, y).get_color():
+                            enemy_figure_counter += 1
+                        else:
+                            return False
+                    elif enemy_figure_counter == 1:
+                        return True
+                    elif enemy_figure_counter > 1:
+                        return False
+        return False
+
+    def check_can_attack_left_down(self, x, y):
+        if x >= 3 and y >= 3:
+            if isinstance(self.get_cell(x, y), Checker):
+                if self.get_cell(x - 1, y - 1) is not None:
+                    if (self.get_cell(x - 1, y - 1).get_color() != self.get_cell(x, y).get_color() and
+                            self.get_cell(x - 2, y - 2) is None):
+                        return True
+            else:
+                enemy_figure_counter = 0
+                for i in range(1, min(x - 1, y - 1) + 1):
+                    if self.get_cell(x - i, y - i) is not None:
+                        if self.get_cell(x - i, y - i).get_color() != self.get_cell(x, y).get_color():
+                            enemy_figure_counter += 1
+                        else:
+                            return False
+                    elif enemy_figure_counter == 1:
+                        return True
+                    elif enemy_figure_counter > 1:
+                        return False
+        return False
+
     def check_can_move(self, x, y):
         if isinstance(self.get_cell(x, y), Checker):
             if self.get_cell(x, y).get_color() == WHITE:
@@ -325,6 +409,18 @@ class CheckersDesk:
                 return self.check_can_move_down(x, y, BLACK)
         return (self.check_can_move_up(x, y, self.get_cell(x, y).get_color()) or
                 self.check_can_move_down(x, y, self.get_cell(x, y).get_color()))
+
+    def check_can_attack(self, x, y):
+        return (self.check_can_attack_right_up(x, y) or self.check_can_attack_left_up(x, y) or
+                self.check_can_attack_right_down(x, y) or self.check_can_attack_left_down(x, y))
+
+    def must_attack(self, color):
+        for y in range(1, 9):
+            for x in range(1, 9):
+                if self.get_cell(x, y) is not None and self.get_cell(x, y).get_color() == color:
+                    if self.check_can_attack(x, y):
+                        return True
+        return False
 
     def draw(self, color):
         for y in range(1, 9):
